@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LUNA — Women's Clothing Online Store | Made in Ukraine</title>
 <meta name="description" content="LUNA is a women's clothing brand from Kyiv: tailored blazers, satin dresses, knitwear and outerwear, made in small batches in Ukraine. Free shipping over €100.">
-<!-- TODO: replace https://YOUR-DOMAIN.com/ with the real site address (full URL with https://) in canonical, og:url and og:image -->
-<link rel="canonical" href="https://YOUR-DOMAIN.com/">
+<link rel="canonical" href="https://luna-store-cyan.vercel.app/">
 
 <!-- Open Graph (link previews: Telegram, Facebook, Instagram DM, WhatsApp) -->
 <meta property="og:type" content="website">
@@ -14,9 +13,9 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:title" content="LUNA — Women's Clothing Online Store | Made in Ukraine">
 <meta property="og:description" content="Tailored blazers, satin dresses, knitwear and outerwear, designed in Kyiv and made in small batches in Ukraine. Free shipping over €100.">
-<meta property="og:url" content="https://YOUR-DOMAIN.com/">
+<meta property="og:url" content="https://luna-store-cyan.vercel.app/">
 <!-- TODO: og:image must be a real file, exactly 1200×630 px, JPG or PNG, under 5 MB, on a public https:// URL -->
-<meta property="og:image" content="https://YOUR-DOMAIN.com/og-image.jpg">
+<meta property="og:image" content="https://luna-store-cyan.vercel.app/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="LUNA — women's clothing, made in Ukraine">
@@ -25,7 +24,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="LUNA — Women's Clothing Online Store | Made in Ukraine">
 <meta name="twitter:description" content="Tailored blazers, satin dresses, knitwear and outerwear, designed in Kyiv and made in small batches in Ukraine.">
-<meta name="twitter:image" content="https://YOUR-DOMAIN.com/og-image.jpg">
+<meta name="twitter:image" content="https://luna-store-cyan.vercel.app/og-image.jpg">
 
 <!-- TODO: favicon files go next to this HTML file (32×32 PNG or .ico; apple-touch-icon 180×180 PNG, no transparency) -->
 <link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
@@ -1165,6 +1164,11 @@ footer{background:#DAD7D2}
 .nav__hamburger{gap:6px;padding:12px 8px;margin-right:-8px}
 .nav__hamburger-line{width:16px}
 .nav__hamburger{color:inherit;-webkit-appearance:none;appearance:none}
+/* review form: columns may shrink, inputs never exceed the screen */
+.review-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+.review-field{min-width:0}
+.review-field input,.review-field textarea{width:100%;min-width:0;max-width:100%}
+@media(max-width:600px){.review-fields{grid-template-columns:minmax(0,1fr)}}
 /* mobile filter panel: fill the screen and scroll inside (an earlier rule reset top to auto) */
 @media(max-width:900px){.filters{top:var(--nav-h);bottom:0;height:auto;max-height:none;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}}
 .nav__hamburger[aria-expanded="true"] .nav__hamburger-line:first-child{transform:translateY(3.5px) rotate(45deg)}
@@ -3094,6 +3098,53 @@ function heroIntro(){
     if(t.hasAttribute('onkeydown')) return;
     if(t.getAttribute('tabindex') === null) return;
     e.preventDefault(); t.click();
+  });
+})();
+
+/* ─── Browser history: iPhone edge-swipe / Back button returns to the previous view ── */
+(function(){
+  if(!window.history || !history.pushState) return;
+  try{ history.scrollRestoration = 'manual'; }catch(e){}
+  var baseGo = window.go, popping = false, cur = {page:'home', params:{}};
+  function same(a, b){ return a.page === b.page && JSON.stringify(a.params) === JSON.stringify(b.params); }
+  function overlayOpen(){
+    var q = function(id, c){ var e = document.getElementById(id); return !!(e && e.classList.contains(c)); };
+    return menuOpen || q('cart-drawer','cart-drawer--open') || q('filters','filters--open') || q('sg','sg--open') || q('dlg','dlg--open') || q('pp','pp--open');
+  }
+  function closeOverlays(){ closeMobileMenu(); closeCartDrawer(); closeFilters(); closeSizeGuide(); closeDialog(); closePP(); }
+  function leaving(){
+    var s = {y: window.scrollY};
+    if(currentPage === 'shop' && shopS) s.shop = JSON.parse(JSON.stringify(shopS));
+    return Object.assign({}, history.state, s);
+  }
+  try{ history.replaceState({page:'home', params:{}, y:0}, ''); }catch(e){}
+  window.go = function(page, params){
+    params = params || {};
+    if(!document.querySelector('[data-page="' + page + '"]')) return;
+    var next = {page:page, params:params};
+    if(!popping){
+      try{
+        if(params.done){ history.replaceState(Object.assign({}, next, {y:0}), ''); }
+        else if(!same(cur, next)){ history.replaceState(leaving(), ''); history.pushState(Object.assign({}, next, {y:0}), ''); }
+      }catch(e){}
+    }
+    cur = next;
+    return baseGo.apply(this, arguments);
+  };
+  window.addEventListener('popstate', function(e){
+    if(overlayOpen()){
+      /* a swipe back with a panel open just closes the panel */
+      closeOverlays();
+      try{ history.pushState({page:cur.page, params:cur.params, y:window.scrollY}, ''); }catch(err){}
+      return;
+    }
+    var st = e.state || {page:'home', params:{}, y:0};
+    popping = true;
+    try{ window.go(st.page, st.params); } finally { popping = false; }
+    if(st.shop && st.page === 'shop'){ shopS = st.shop; sortSync(); applyShop(); }
+    var y = st.y || 0;
+    window.scrollTo({top:y, behavior:'instant'});
+    setTimeout(function(){ window.scrollTo({top:y, behavior:'instant'}); }, 60);
   });
 })();
 </script>
