@@ -360,7 +360,7 @@ footer{border-top:1px solid var(--border);overflow:hidden;padding-bottom:0}
 .hero__scroll{display:none}
   /* Collection grid home: 2col */
   .coll-head{flex-direction:column;gap:8px}
-  .coll-grid{grid-template-columns:repeat(2,1fr);gap:2px}
+  .coll-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 14px}
   /* About */
   .about__inner{grid-template-columns:1fr;gap:36px}
   .about__img-wrap{aspect-ratio:4/5;order:1}.about__text{order:2}
@@ -375,7 +375,7 @@ footer{border-top:1px solid var(--border);overflow:hidden;padding-bottom:0}
   /* PDP */
   .pdp{grid-template-columns:1fr}
   .pdp__img-wrap{position:static;aspect-ratio:4/5}
-  .pdp-related .coll-grid{grid-template-columns:repeat(2,1fr)}
+  .pdp-related .coll-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   /* Cart */
   .cart-layout{grid-template-columns:1fr}
   .cart-summary{position:static}
